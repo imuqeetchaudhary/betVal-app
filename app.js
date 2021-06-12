@@ -8,7 +8,6 @@ const userBetslip = require("./routes/userBetslip")
 const matchResult = require("./routes/matchResult")
 const wonUsers = require("./routes/wonUsers")
 const cors = require("cors")
-const request = require("request");
 const https = require("https");
 
 const app = express()
