@@ -1,4 +1,5 @@
 const { UserBetslip } = require("../db/models/userBetslip")
+const { UserBalance } = require("../db/models/userBalance")
 
 exports.getUserBetslip = async (req, res) => {
     try {
@@ -20,26 +21,38 @@ exports.getUserBetslip = async (req, res) => {
 
 exports.addUserBetslip = async (req, res) => {
     try {
-        const body = req.body
+        const userBalance = await UserBalance.findOne({userId: req.user._id})
+        console.log(userBalance)
+        if (userBalance.normalBalance >= req.body.stake || userBalance.freBetBalance >= req.body.stake) {
+            const body = req.body
 
-        const userBetslip = await UserBetslip.findOne({matchId: body.matchId})
-        if(userBetslip) return res.status(400).json({
-            message: "You have already added bet for this match"
-        })
+            const userBetslip = await UserBetslip.findOne({ matchId: body.matchId })
+            if (userBetslip) return res.status(400).json({
+                message: "You have already added bet for this match"
+            })
 
-        const totalOdds = (parseFloat(body.homeOdd) + parseFloat(body.drawOdd) + parseFloat(body.awayOdd) + parseFloat(body.bttsYes) + parseFloat(body.bttsNo) + parseFloat(body.over25) + parseFloat(body.under25))
+            const totalOdds = (parseFloat(body.homeOdd) + parseFloat(body.drawOdd) + parseFloat(body.awayOdd) + parseFloat(body.bttsYes) + parseFloat(body.bttsNo) + parseFloat(body.over25) + parseFloat(body.under25))
 
-        const newUserBetslip = await new UserBetslip({
-            ...body,
-            userId: req.user._id,
-            totalOdds: totalOdds
-        })
+            const newUserBetslip = await new UserBetslip({
+                ...body,
+                userId: req.user._id,
+                totalOdds: totalOdds
+            })
 
-        await newUserBetslip.save()
-        res.status(200).json({
-            message: "Successfully added bet in User Betslip for this match",
-            userBetslip: newUserBetslip
-        })
+            await UserBalance.updateOne(
+                { userId: req.user._id},
+                {$set: {
+                    freeBetBalance: userBalance.freeBetBalance - req.body.stake
+                }})
+            await newUserBetslip.save()
+            res.status(200).json({
+                message: "Successfully added bet in User Betslip for this match",
+                userBetslip: newUserBetslip
+            })
+        }
+        else {
+            res.status(400).json({message: "You don't have enought balance"})
+        }
     }
     catch (err) {
         res.status(400).json({
