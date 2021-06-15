@@ -45,6 +45,9 @@
 }
 ```
 
+### to find all users
+- user-balance/users :get
+
 ## Routes for user betslip
 ### to add bet on match in user betslip
 - user-betslip/add :post
@@ -80,7 +83,7 @@
 ```
 
 ### to view match result
-- match-result/get :get
+- match-result/get :post
 ```
 {
     matchId:
@@ -89,7 +92,7 @@
 
 ## Routes for winning users
 ### to check winning status for a specific authenticated user
-- won-users/get :get
+- won-users/get :post
 ```
 {
     matchId:
@@ -97,7 +100,7 @@
 ```
 
 ### to check all winning users
-- won-users/ :get
+- won-users/ :post
 ```
 {
     matchId:

@@ -1,4 +1,5 @@
 const { UserBalance } = require("../db/models/userBalance")
+const { User } = require("../db/models/user")
 
 exports.getBalance = async (req, res) => {
     try {
@@ -14,6 +15,18 @@ exports.getBalance = async (req, res) => {
     catch (err) {
         res.status(400).json({
             message: err
+        })
+    }
+}
+
+exports.getAllUsers = async (req, res) => {
+    try{
+        const user = await User.find()
+        res.status(200).json({user})
+    }
+    catch (err) {
+        res.status(400).json({
+            message: `${err}`
         })
     }
 }

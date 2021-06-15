@@ -6,6 +6,7 @@ const { validation } = require("../middlewares/validation")
 const { userBalanceSchema } = require("../validation/userBalance")
 
 router.get("/", authentication, userBalance.getBalance)
+router.get("/users", authentication, userBalance.getAllUsers)
 router.post("/add", authentication, validation(userBalanceSchema), userBalance.addBalance)
 
 module.exports = router
