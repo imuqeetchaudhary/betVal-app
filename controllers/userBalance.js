@@ -41,7 +41,7 @@ exports.addBalance = async (req, res) => {
             if (!userBalance) {
                 const addBalance = await newBalance.save()
                 res.status(200).json({
-                    message: `Successfully added balance for userId: ${req.body.userId}`,
+                    message: `Successfully added user balance`,
                     userBalance: addBalance
                 })
             }
@@ -51,7 +51,7 @@ exports.addBalance = async (req, res) => {
                     { $set: { ...req.body } }
                 )
                 res.status(200).json({
-                    message: `Successfully updated balance for userId: ${req.body.userId}`
+                    message: `Successfully updated user balance`
                 })
             }
         }
