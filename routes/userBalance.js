@@ -5,7 +5,8 @@ const { authentication } = require("../middlewares/isAuth")
 const { validation } = require("../middlewares/validation")
 const { userBalanceSchema } = require("../validation/userBalance")
 
-router.get("/", authentication, userBalance.getBalance)
+router.get("/all", authentication, userBalance.getAllUsersBalance)
+router.get("/get", authentication, userBalance.getBalance)
 router.get("/users", authentication, userBalance.getAllUsers)
 router.post("/add", authentication, validation(userBalanceSchema), userBalance.addBalance)
 

@@ -19,6 +19,24 @@ exports.getBalance = async (req, res) => {
     }
 }
 
+exports.getAllUsersBalance = async (req, res) => {
+    try {
+        const userBalance = await UserBalance.find().populate("userId")
+        if (!userBalance) return res.status(404).json({
+            message: "User balance not found"
+        })
+
+        res.status(200).json({
+            balance: userBalance
+        })
+    }
+    catch (err) {
+        res.status(400).json({
+            message: err
+        })
+    }
+}
+
 exports.getAllUsers = async (req, res) => {
     try{
         const user = await User.find()

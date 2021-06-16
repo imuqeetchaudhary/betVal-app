@@ -45,6 +45,12 @@
 }
 ```
 
+### to get single user balance
+- user-balance/get :get
+
+### to get all users balances
+- user-balance/all :get
+
 ### to find all users
 - user-balance/users :get
 
