@@ -3,7 +3,7 @@ const { User } = require("../db/models/user")
 
 exports.getBalance = async (req, res) => {
     try {
-        const userBalance = await UserBalance.findOne({ userId: req.body.userId })
+        const userBalance = await UserBalance.findOne({ userId: req.user._id })
         if (!userBalance) return res.status(404).json({
             message: "User balance not found"
         })
