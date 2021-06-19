@@ -21,9 +21,9 @@ exports.getUserBetslip = async (req, res) => {
 
 exports.addUserBetslip = async (req, res) => {
     try {
-        const userBalance = await UserBalance.findOne({userId: req.user._id})
+        const userBalance = await UserBalance.findOne({ userId: req.user._id })
         console.log(userBalance)
-        if (userBalance.normalBalance >= req.body.stake || userBalance.freBetBalance >= req.body.stake) {
+        if (userBalance.normalBalance >= req.body.stake && userBalance.freeBetBalance >= req.body.stake) {
             const body = req.body
 
             const userBetslip = await UserBetslip.findOne({ matchId: body.matchId })
@@ -39,19 +39,35 @@ exports.addUserBetslip = async (req, res) => {
                 totalOdds: totalOdds
             })
 
-            await UserBalance.updateOne(
-                { userId: req.user._id},
-                {$set: {
-                    freeBetBalance: userBalance.freeBetBalance - req.body.stake
-                }})
-            await newUserBetslip.save()
+            if (req.body.freeBetBalance > 0) {
+                await UserBalance.updateOne(
+                    { userId: req.user._id },
+                    {
+                        $set: {
+                            freeBetBalance: userBalance.freeBetBalance - req.body.stake
+                        }
+                    })
+                await newUserBetslip.save()
+            }
+            else if (req.body.normalBalance > 0) {
+                await UserBalance.updateOne(
+                    { userId: req.user._id },
+                    {
+                        $set: {
+                            normalBalance: userBalance.normalBalance - req.body.stake
+                        }
+                    })
+                await newUserBetslip.save()
+            }
+
+
             res.status(200).json({
                 message: "Successfully added bet in User Betslip for this match",
                 userBetslip: newUserBetslip
             })
         }
         else {
-            res.status(400).json({message: "You don't have enought balance"})
+            res.status(400).json({ message: "You don't have enought balance" })
         }
     }
     catch (err) {
