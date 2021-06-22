@@ -1,14 +1,19 @@
 const { MatchResult } = require("../db/models/matchResult")
+const { Football } = require("../db/models/football")
 
 exports.getMatchResult = async (req, res) => {
     try{
         const matchResult = await MatchResult.findOne({matchId: req.body.matchId})
+        const football = await Football.findById(req.body.matchId)
+        
         if(!matchResult) return res.status(404).json({
             message: "No match result found"
         })
 
         res.status(200).json({
-            matchResult: matchResult
+            matchResult: matchResult,
+            homeTeam: football.homeTeam,
+            awayTeam: football.awayTeam
         })
     }
     catch (err) {
