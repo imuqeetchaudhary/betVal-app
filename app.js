@@ -18,12 +18,7 @@ app.use(bodyParser.json())
 app.use(cors())
 
 app.get("/", async (req, res) => {
-    try {
-        res.status(200).json({ message: "BetVal Web App" })
-    }
-    catch (err) {
-        res.status(400).json({ error: `${err}` })
-    }
+    res.status(200).json({ message: "BetVal Web App" })
 })
 
 app.use("/user", user)
