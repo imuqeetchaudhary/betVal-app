@@ -4,111 +4,294 @@ const { WonUser } = require("../db/models/wonUser")
 
 exports.getWonUsers = async (req, res) => {
     try {
-        const wonUsers = await WonUser.find({matchId: req.body.matchId})
-        if(!wonUsers) return res.status(404).json({
-            message: "Not found any winning user"
-        })
-
-        res.status(200).json({
-            wonUsers: wonUsers
-        })
-    }
-    catch (err) {
-        res.status(400).json({
-            message: `${err}`
-        })
-    }
-}
-
-exports.checkBetStatus = async (req, res) => {
-    try {
         const matchResult = await MatchResult.findOne({ matchId: req.body.matchId })
         if (!matchResult) return res.status(404).json({
             message: "No match result found"
         })
 
-        const userBetslip = await UserBetslip.findOne({ matchId: req.body.matchId, userId: req.user._id })
-        if (!userBetslip) return res.status(404).json({
-            message: "No user betslip found for this match"
-        })
+        if (matchResult.isHomeTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === true) {
 
-        // 
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, homeOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, over25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
 
-        const BetReturn = async () => {
-            const newBetslip = await UserBetslip.updateOne(
-                { matchId: req.body.matchId },
-                {
-                    $set: {
-                        isBetWon: true,
-                        betReturn: userBetslip.stake * userBetslip.totalOdds
-                    }
-                })
-            
-            const wonUser = await WonUser.findOne({userId: req.user._id})
-            if(!wonUser) {
-                const newWonUser = new WonUser({
-                    userId: req.user._id,
-                    matchId: req.body.matchId,
-                    betReturn: userBetslip.stake * userBetslip.totalOdds
-                })
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
 
-                await newWonUser.save()
-                res.status(200).json({
-                    message: "You won the bet",
-                    betReturn: userBetslip.stake * userBetslip.totalOdds
-                })
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
             }
-            else {
-                res.status(200).json({
-                    message: "You won the bet",
-                    betReturn: userBetslip.stake * userBetslip.totalOdds
-                })
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
+        }
+
+        else if (matchResult.isHomeTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === false) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, homeOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, under25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
             }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
+        }
+        else if (matchResult.isHomeTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === true) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, homeOdd: { $gte: 0.1 }, bttsNo: { $gte: 0.1 }, over25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
 
-            
-        }
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
 
-        if (matchResult.isHomeTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === true && userBetslip.homeOdd > 0 && userBetslip.bttsYes > 0 && userBetslip.over25 > 0) {
-            return BetReturn()
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
-        if (matchResult.isHomeTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === false && userBetslip.homeOdd > 0 && userBetslip.bttsYes > 0 && userBetslip.under25 > 0) {
-            return BetReturn()
-        }
-        if (matchResult.isHomeTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === true && userBetslip.homeOdd > 0 && userBetslip.bttsNo > 0 && userBetslip.over25 > 0) {
-            return BetReturn()
-        }
-        if (matchResult.isHomeTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === false && userBetslip.homeOdd > 0 && userBetslip.bttsNo > 0 && userBetslip.under25 > 0) {
-            return BetReturn()
+        else if (matchResult.isHomeTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === false) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, homeOdd: { $gte: 0.1 }, bttsNo: { $gte: 0.1 }, under25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
 
         // 
 
-        if (matchResult.isAwayTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === true && userBetslip.awayOdd > 0 && userBetslip.bttsYes > 0 && userBetslip.over25 > 0) {
-            return BetReturn()
+        else if (matchResult.isAwayTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === true) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, awayOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, over25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
-        if (matchResult.isAwayTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === false && userBetslip.awayOdd > 0 && userBetslip.bttsYes > 0 && userBetslip.under25 > 0) {
-            return BetReturn()
+        else if (matchResult.isAwayTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === false) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, awayOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, under25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
-        if (matchResult.isAwayTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === true && userBetslip.awayOdd > 0 && userBetslip.bttsNo > 0 && userBetslip.over25 > 0) {
-            return BetReturn()
+        else if (matchResult.isAwayTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === true) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, awayOdd: { $gte: 0.1 }, bttNo: { $gte: 0.1 }, over25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
-        if (matchResult.isAwayTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === false && userBetslip.awayOdd > 0 && userBetslip.bttsNo > 0 && userBetslip.under25 > 0) {
-            return BetReturn()
+        else if (matchResult.isAwayTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === false) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, awayOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, under25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
 
         // 
 
-        if (matchResult.isDraw == true && matchResult.isBtts == true && matchResult.isOver25 === true && userBetslip.drawOdd > 0 && userBetslip.bttsYes > 0 && userBetslip.over25 > 0) {
-            return BetReturn()
+        else if (matchResult.isDraw == true && matchResult.isBtts == true && matchResult.isOver25 === true) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, drawOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, over25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
-        if (matchResult.isDraw == true && matchResult.isBtts == true && matchResult.isOver25 === false && userBetslip.drawOdd > 0 && userBetslip.bttsYes > 0 && userBetslip.under25 > 0) {
-            return BetReturn()
+        else if (matchResult.isDraw == true && matchResult.isBtts == true && matchResult.isOver25 === false) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, drawOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, under25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
-        if (matchResult.isDraw == true && matchResult.isBtts == false && matchResult.isOver25 === true && userBetslip.drawOdd > 0 && userBetslip.bttsNo > 0 && userBetslip.over25 > 0) {
-            return BetReturn()
+        else if (matchResult.isDraw == true && matchResult.isBtts == false && matchResult.isOver25 === true) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, drawOdd: { $gte: 0.1 }, bttsNo: { $gte: 0.1 }, over25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
-        if (matchResult.isDraw == true && matchResult.isBtts == false && matchResult.isOver25 === false && userBetslip.drawOdd > 0 && userBetslip.bttsNo > 0 && userBetslip.under25 > 0) {
-            return BetReturn()
+        else if (matchResult.isDraw == true && matchResult.isBtts == false && matchResult.isOver25 === false) {
+            const betslip = await UserBetslip.find({ matchId: req.body.matchId, drawOdd: { $gte: 0.1 }, bttsYes: { $gte: 0.1 }, over25: { $gte: 0.1 } })
+            if (!betslip) return res.status(404).json({ message: "Not Found" })
+
+            for (let i = 0; i < betslip.length; i++) {
+                const wonUser = await WonUser.findOne({ userId: betslip[i].userId, matchId: req.body.matchId })
+                if (!wonUser) {
+
+                    const newWonUser = new WonUser({
+                        userId: betslip[i].userId,
+                        matchId: req.body.matchId,
+                        betReturn: betslip[i].stake * betslip[i].totalOdds
+                    })
+
+                    await newWonUser.save()
+                }
+                else {
+                    console.log("Already Saved");
+                }
+            }
+            const wonUser = await WonUser.find()
+            res.json({ wonUser })
         }
 
         else {
@@ -118,6 +301,22 @@ exports.checkBetStatus = async (req, res) => {
             })
         }
 
+    }
+    catch (err) {
+        res.status(400).send({
+            message: `${err}`
+        })
+    }
+}
+
+exports.checkBetStatus = async (req, res) => {
+    try {
+        const wonUser = await WonUser.findOne({ userId: req.user._id, matchId: req.body.matchId })
+        if (!wonUser) return res.status(200).json({
+            message: "You lost the bet",
+            betReturn: 0.00
+        })
+        res.status(200).json({ wonUser })
     }
     catch (err) {
         res.status(400).json({
