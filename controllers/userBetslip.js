@@ -48,6 +48,10 @@ exports.addUserBetslip = async (req, res) => {
                         }
                     })
                 await newUserBetslip.save()
+                res.status(200).json({
+                    message: "Successfully added bet in User Betslip for this match",
+                    userBetslip: newUserBetslip
+                })
             }
             else if (req.body.normalBalance > 0) {
                 await UserBalance.updateOne(
@@ -58,13 +62,11 @@ exports.addUserBetslip = async (req, res) => {
                         }
                     })
                 await newUserBetslip.save()
+                res.status(200).json({
+                    message: "Successfully added bet in User Betslip for this match",
+                    userBetslip: newUserBetslip
+                })
             }
-
-
-            res.status(200).json({
-                message: "Successfully added bet in User Betslip for this match",
-                userBetslip: newUserBetslip
-            })
         }
         else {
             res.status(400).json({ message: "You don't have enought balance" })
