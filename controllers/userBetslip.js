@@ -76,3 +76,23 @@ exports.addUserBetslip = async (req, res) => {
         })
     }
 }
+
+exports.deleteUserBetslip = async (req, res) => {
+    try {
+        const betslip = await UserBetslip.findOne({ _id: req.body.betslipId })
+        if (!betslip) return res.status(404).json({
+            message: "No betslip found"
+        })
+        else {
+            await UserBetslip.deleteOne({ _id: req.body.betslipId })
+            res.status(200).json({
+                message: "Successfully deleted betslip"
+            })
+        }
+    }
+    catch (err) {
+        res.status(400).json({
+            message: `${err}`
+        })
+    }
+}

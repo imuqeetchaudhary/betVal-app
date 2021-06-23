@@ -11,3 +11,7 @@ exports.userBetslipSchema = yup.object({
     under25: yup.number().required(),
     stake: yup.number().required()
 })
+
+exports.deleteBetslipSchema = yup.object({
+    betslipId: yup.string().required(),
+})
