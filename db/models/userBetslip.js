@@ -48,11 +48,11 @@ const userBetslipSchema = new schema({
     },
     isBetWon: {
         type: Boolean,
-        default: false
+        default: null
     },
     betReturn: {
         type: Number,
-        default: 0.00
+        default: null
     }
 })
 
