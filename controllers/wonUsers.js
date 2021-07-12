@@ -16,6 +16,17 @@ exports.getWonUsers = async (req, res) => {
             console.log("Updated Betslip");
         }
 
+        async function updateBetslipForLostUser() {
+            const updateBetslip = await UserBetslip.updateOne(
+                { matchId: req.body.matchId },
+                {
+                    $set: {
+                        isBetWon: false
+                    }
+                })
+            console.log("Updated Betslip");
+        }
+
         const matchResult = await MatchResult.findOne({ matchId: req.body.matchId })
         if (!matchResult) return res.status(404).json({
             message: "No match result found"
@@ -343,6 +354,7 @@ exports.getWonUsers = async (req, res) => {
         }
 
         else {
+            updateBetslipForLostUser()
             res.status(200).json({
                 message: "You lost the bet",
                 betReturn: 0.00
