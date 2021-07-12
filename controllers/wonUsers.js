@@ -56,7 +56,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
 
@@ -83,7 +83,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isHomeTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === true) {
@@ -109,7 +109,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isHomeTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === false) {
@@ -135,7 +135,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
 
@@ -164,7 +164,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isAwayTeamWon == true && matchResult.isBtts == true && matchResult.isOver25 === false) {
@@ -190,7 +190,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isAwayTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === true) {
@@ -216,7 +216,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isAwayTeamWon == true && matchResult.isBtts == false && matchResult.isOver25 === false) {
@@ -242,7 +242,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
 
@@ -271,7 +271,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isDraw == true && matchResult.isBtts == true && matchResult.isOver25 === false) {
@@ -297,7 +297,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isDraw == true && matchResult.isBtts == false && matchResult.isOver25 === true) {
@@ -323,7 +323,7 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
         else if (matchResult.isDraw == true && matchResult.isBtts == false && matchResult.isOver25 === false) {
@@ -349,16 +349,13 @@ exports.getWonUsers = async (req, res) => {
                     console.log("Already Saved");
                 }
             }
-            const wonUser = await WonUser.find().populate("userId")
+            const wonUser = await WonUser.find({ matchId: req.body.matchId }).populate("userId")
             res.json({ wonUser })
         }
 
         else {
             updateBetslipForLostUser()
-            res.status(200).json({
-                message: "You lost the bet",
-                betReturn: 0.00
-            })
+            res.status(200).json({ message: "No user won the bet" })
         }
 
     }
