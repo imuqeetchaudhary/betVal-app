@@ -36,7 +36,8 @@ exports.addUserBetslip = async (req, res) => {
             const newUserBetslip = await new UserBetslip({
                 ...body,
                 userId: req.user._id,
-                totalOdds: totalOdds
+                totalOdds: totalOdds,
+                isBetWon: null
             })
 
             if (req.body.freeBetBalance > 0) {
