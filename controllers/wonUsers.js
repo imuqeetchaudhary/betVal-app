@@ -372,7 +372,10 @@ exports.checkBetStatus = async (req, res) => {
             })
         }
 
-        res.status(200).json({ wonUser })
+        res.status(200).json({
+            message: "You won the bet",
+            betReturn: wonUser.betReturn
+        })
     }
     catch (err) {
         res.status(400).json({
